@@ -1,31 +1,29 @@
-# [App Name]
-<!-- About your app: what does your app do? Example: "Today's carinderia menu and orders, without paper." -->
+# HarvestHub
+HarvestHub is a front-end web platform that directly connects local farmers with consumers, and bulk buyers. It aims to reduce reliance on middlemen, minimize post-harvest waste, and support transparent pricing and easy ordering of fresh agricultural products.
 
 ## Problem
-<!-- 1–2 sentences in bulleted form. Keep it direct. What everyday problem does your app solve? Who has this problem, and where?
-Example: Carinderia owners in Manolo Fortich write orders on paper and lose track during lunch rush. -->
+- Local farmers in agricultural communities struggle to sell perishable harvests directly to buyers, forcing them to rely on middlemen who reduce farmer profits and drive up retail prices.
+- At the same time, local consumers, restaurants, and bulk buyers lack transparent information on farm sources, real-time product availability, and fair pricing when sourcing fresh produce.
 
 ## Target Users
-<!-- List 1–2 types of people who will use your app. Be specific.
-Example: Carinderia owners; customers ordering for pickup -->
+-Farmers: Sellers who list fresh harvests, availability, pricing, and farm background to reach buyers directly.
+-Local Consumers: Buyers who browse, search, filter, compare, and order fresh local produce with clear pricing and order status tracking.
 
 ## Solution
-<!-- Add your solution -->
+- HarvestHub is a direct-to-buyer web platform that connects local farmers directly with households, and bulk buyers. Farmers can list available harvests with transparent pricing and stock quantities, while buyers can browse, filter, compare farm sources, place orders, and track deliveries in one place
 
 ## Main Feature
-<!-- The ONE thing your app must do. If you removed everything else, what's left?
-Example: Customers view today's menu; the owner adds and tracks orders. -->
+Buyers browse available fresh harvests with transparent prices and add items to their cart to place direct orders, while farmers list their available products and track orders from confirmation to delivery.
 
 ## Pages
-<!-- List 3–5 pages and one line on what each page shows. Homepage and App page are required. -->
-- Homepage:
-- App page:
-- Cart or Subscription page:
-- 
+- Homepage: Showcases featured harvests, local farmer highlights, and quick navigation to start shopping.
+- App page: Displays the interactive product marketplace where buyers search, filter, and view detailed product listings, prices, stock availability, and farmer profiles.
+- Cart page: Allows buyers to review selected harvests, adjust item quantities, choose delivery options, and view the order summary before checkout.
+- Order Tracking page: Displays placed orders ("My Orders") and live order progress from initial confirmation through delivery.
 
 ## Team
-<!-- Name – role. Example: Juan Dela Cruz – Developer -->
-- 
+- Rachelle Ann Pabahe - Developer
+- Wendy Lou Fate Zerrudo - Developer
 
 ## Live Link
 <!-- Add your GitHub Pages link once deployed. -->
