@@ -1,50 +1,9 @@
 # AI Log
-<!--
-This file is your record of how you worked with AI (Gemini, ChatGPT, or Claude).
-Using AI is allowed. Hiding it is not. This log shows your instructor that YOU
-reviewed, understood, and made decisions about your code.
 
-WHEN to add an entry:
-- Every time you use AI to plan, write, explain, or debug a part of your app.
-- Add the entry right after that step works, BEFORE you commit. Don't write it all at the end.
-
-HOW to write an entry:
-- Copy the template below and fill it in. Newest entry at the bottom.
-- Write in your own words. Short is fine, but be specific.
-- "What I changed or rejected" is the most important part. Even small changes count:
-  renaming a class, fixing a bug the AI made, simplifying code, or saying no to a suggestion.
-- If you used the AI's code exactly as given, write why it was okay and what you checked.
-
-TEMPLATE (copy from here):
-
-## Entry [#]: [Date]
-- **User story:** [US# and short title]
-- **What I asked:** [Your prompt, or a short summary of it]
-- **What the AI suggested:** [1–2 sentences summarizing the AI's answer]
-- **What I changed or rejected, and why:** [Your decisions in your own words]
-- **How I tested it:** [Which acceptance criteria you checked, and whether each passed]
-- **What I learned:** [One new thing you now understand]
-
-EXAMPLE:
-
-## Entry 3: Nov 20, 2026
-- **User story:** US1: View today's menu
-- **What I asked:** "Show me how to display my menu array as cards on app.html."
-- **What the AI suggested:** A forEach loop that builds the cards with innerHTML.
-- **What I changed or rejected, and why:** Renamed `.item-card` to `.menu-card` to match
-  my CSS. The AI forgot the empty menu case, so I asked for a hint and added a
-  "No dishes today yet" message myself.
-- **How I tested it:** AC1.1 passed (cards show name, photo, price). AC1.3 passed
-  after my fix (empty message shows).
-- **What I learned:** forEach runs the same code once for every item in an array.
-
-Minimum of 5 meaningful AI logs.
--->
-
-## Entry 1: [Date]
-- **User story:**
-- **What I asked:**
-- **What the AI suggested:**
-- **What I changed or rejected, and why:**
-- **How I tested it:**
-- **What I learned:**
+## Entry 1: [November 27,2026]
+- **User story:**As a student, I want to browse, search, and filter local produce with transparent pricing and live availability, so that I can quickly find affordable farm goods.
+- **What I asked**:Can you provide a short and concise step by step plan for this user story
+- **What the AI suggested:**Implement search, category filtering, and product details controls in HTML, including accessible labels, headings, and a details modal or panel. Add descriptions to each produce item in script.js, wire up dynamic search and filtering, and display the selected product’s description, price, and availability, then style everything in styles.css for a clean, responsive layout on mobile and desktop.
+- **What I changed or rejected, and why:** the design should not be mediocore and the color pallete is also suitable for elders because our target user for this may include elders or non techy people
+- **How I tested it:** I tested the search bar, category filters, and product details to ensure they displayed the correct produce information, pricing, and availability
+- **What I learned:**I learned how to implement search, filtering, and product details to improve website functionality and user experience. I also learned the importance of accessible design, including readable fonts, clear buttons, and suitable colors, especially for elderly and non-tech users.

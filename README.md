@@ -7,6 +7,7 @@ HarvestHub is a front-end web platform that directly connects local farmers with
 
 ## Target Users
 -Farmers: Sellers who list fresh harvests, availability, pricing, and farm background to reach buyers directly.
+
 -Local Consumers: Buyers who browse, search, filter, compare, and order fresh local produce with clear pricing and order status tracking.
 
 ## Solution

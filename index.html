@@ -1,11 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Name</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HarvestHub — Local Produce Marketplace</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    
+  <main class="container">
+    <section aria-labelledby="marketplace-heading">
+      <header class="section-header">
+        <h1 id="marketplace-heading">HarvestHub Local Produce</h1>
+        <p>Fresh farm goods with transparent unit pricing and live stock availability.</p>
+      </header>
+
+      <div class="marketplace-controls">
+        <label for="search-input" class="visually-hidden">Search produce</label>
+        <input id="search-input" type="search" placeholder="Search produce (e.g., tomatoes)..." />
+
+        <label for="category-select" class="visually-hidden">Filter by category</label>
+        <select id="category-select">
+          <option value="All">All Categories</option>
+          <option value="Vegetables">Vegetables</option>
+          <option value="Fruits">Fruits</option>
+        </select>
+      </div>
+
+      <aside id="product-details" class="product-details" aria-live="polite" hidden></aside>
+
+      <div id="produce-grid" class="produce-grid"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
