@@ -622,3 +622,53 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+.orders-group-heading {
+  margin: 0.9rem 0 0.45rem;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.order-history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.order-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.order-items-preview {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-main) !important;
+}
+
+.order-status-pill {
+  display: inline-block;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.order-status-pill.active,
+.status-badge-active {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.order-status-pill.delivered,
+.status-badge-delivered {
+  background: #e6f4ea;
+  color: #1e5631;
+}
+
+.order-delivered-card {
+  border-color: #b7dec3;
+  background: #f4fbf6;
+}

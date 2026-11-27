@@ -20,7 +20,7 @@ const farmersList = [
     location: "Misamis Oriental",
     specialty: "Fruits",
     photo: "images/farmer-marites.jpg",
-    bio: "Specializes in naturally ripened Lakatan bananas, Indian mangoes, and zesty calamansi.",
+    bio: "Specializes in naturally ripened Lakatan bananas, sweet Carabao mangoes, and zesty calamansi.",
     operations: {
       harvestSchedule: "Mon & Thu (6:00 AM – 9:30 AM)",
       pickupWindow: "Thu–Sun, 8:00 AM – 4:00 PM",
@@ -34,7 +34,7 @@ const farmersList = [
     location: "Bukidnon, Northern Mindanao",
     specialty: "Vegetables & Fruits",
     photo: "images/farmer-danilo.jpg",
-    bio: "Focuses on post-harvest curing for red onions and pineapples with fair farm-gate pricing.",
+    bio: "Focuses on post-harvest curing for red onions and seasonal Queen pineapples with fair farm-gate pricing.",
     operations: {
       harvestSchedule: "Wed & Fri (5:30 AM – 8:30 AM)",
       pickupWindow: "Fri–Sun, 7:30 AM – 3:00 PM",
@@ -108,7 +108,7 @@ const produceList = [
     unit: "kg",
     stock: 18,
     image: "images/indian mangoes.jpg",
-    description: "Juicy, fragrant ripe Indian mangoes with honey-sweet flavor and minimal fiber."
+    description: "Juicy, fragrant Indian mangoes with honey-sweet flavor and minimal fiber."
   },
   {
     id: 7,
@@ -159,13 +159,14 @@ const trackingStages = [
   { key: "Order Confirmed", detail: "Order received and assigned to partner grower." },
   { key: "Preparing Harvest", detail: "Produce is being harvested, weighed, and packed." },
   { key: "Out for Delivery", detail: "Order is en route to your chosen pickup or delivery point." },
-  { key: "Delivered", detail: "Order completed and ready or received." }
+  { key: "Delivered", detail: "Order completed and received." }
 ];
 
 const ordersHistory = [
   {
     id: "HH-1042",
     placedAt: "2026-11-24 09:15 AM",
+    deliveredAt: null,
     deliveryLabel: "Campus Hub Pickup",
     deliveryFee: 0,
     subtotal: 230,
@@ -173,7 +174,7 @@ const ordersHistory = [
     stageIndex: 1,
     items: [
       { name: "Tomatoes", qty: 2, unit: "kg", unitPrice: 45, lineTotal: 90 },
-      { name: "Indian Mangoes", qty: 1, unit: "kg", unitPrice: 140, lineTotal: 140 }
+      { name: "Carabao Mangoes", qty: 1, unit: "kg", unitPrice: 140, lineTotal: 140 }
     ]
   }
 ];
@@ -200,10 +201,18 @@ const orderTrackingPanel = document.getElementById("order-tracking-panel");
 const orderConfirmation = document.getElementById("order-confirmation");
 const productDetails = document.getElementById("product-details");
 
+function isOrderDelivered(order) {
+  return order.stageIndex >= trackingStages.length - 1;
+}
+
+function formatCurrentTime() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 function revealPanel(panelEl, shouldScroll = true) {
   panelEl.hidden = false;
   panelEl.classList.remove("panel-animate");
-  void panelEl.offsetWidth; // Restart CSS animation cleanly
+  void panelEl.offsetWidth;
   panelEl.classList.add("panel-animate");
   if (shouldScroll) {
     panelEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -216,6 +225,10 @@ function getFarmerById(farmerId) {
 
 function getProductById(productId) {
   return produceList.find((item) => item.id === productId);
+}
+
+function getProductByName(name) {
+  return produceList.find((item) => item.name.toLowerCase() === String(name).toLowerCase());
 }
 
 function getDeliveryOption() {
@@ -233,7 +246,8 @@ function formatStockStatus(item) {
 }
 
 function updateOrdersBadge() {
-  ordersCountEl.textContent = String(ordersHistory.length);
+  const activeCount = ordersHistory.filter((order) => !isOrderDelivered(order)).length;
+  ordersCountEl.textContent = `${ordersHistory.length}${activeCount > 0 ? ` • ${activeCount} active` : ""}`;
 }
 
 function updateCartBadge() {
@@ -264,6 +278,25 @@ function addToCart(productId, qtyToAdd) {
   updateCartBadge();
   if (isOrderSummaryOpen) {
     renderOrderSummary(false);
+  }
+}
+
+function reorderOrderItems(orderId) {
+  const order = getOrderById(orderId);
+  if (!order) return;
+
+  let addedAny = false;
+  order.items.forEach((orderItem) => {
+    const product = getProductByName(orderItem.name);
+    if (product && product.stock > 0) {
+      addToCart(product.id, Math.min(orderItem.qty, product.stock));
+      addedAny = true;
+    }
+  });
+
+  if (addedAny) {
+    isOrderSummaryOpen = true;
+    renderOrderSummary(true);
   }
 }
 
@@ -322,7 +355,8 @@ function confirmOrder() {
   const totalCost = subtotal + delivery.fee;
   const newOrder = {
     id: `HH-${1043 + ordersHistory.length}`,
-    placedAt: "Just now",
+    placedAt: `Today, ${formatCurrentTime()}`,
+    deliveredAt: null,
     deliveryLabel: delivery.label,
     deliveryFee: delivery.fee,
     subtotal,
@@ -382,7 +416,21 @@ function advanceOrderStage(orderId) {
   if (!order) return;
   if (order.stageIndex < trackingStages.length - 1) {
     order.stageIndex += 1;
+    if (isOrderDelivered(order) && !order.deliveredAt) {
+      order.deliveredAt = `Today, ${formatCurrentTime()}`;
+    }
   }
+  updateOrdersBadge();
+  renderMyOrders(false);
+  renderOrderTracking(false);
+}
+
+function resetOrderToConfirmed(orderId) {
+  const order = getOrderById(orderId);
+  if (!order) return;
+  order.stageIndex = 0;
+  order.deliveredAt = null;
+  updateOrdersBadge();
   renderMyOrders(false);
   renderOrderTracking(false);
 }
@@ -399,6 +447,7 @@ function renderOrderTracking(animate = true) {
     return;
   }
 
+  const delivered = isOrderDelivered(order);
   const currentStage = trackingStages[order.stageIndex] || trackingStages[0];
   orderTrackingPanel.innerHTML = "";
 
@@ -420,8 +469,10 @@ function renderOrderTracking(animate = true) {
   headerRow.append(heading, closeBtn);
 
   const statusBadge = document.createElement("span");
-  statusBadge.className = "category-badge";
-  statusBadge.textContent = `Current Status: ${currentStage.key}`;
+  statusBadge.className = `category-badge ${delivered ? "status-badge-delivered" : "status-badge-active"}`;
+  statusBadge.textContent = delivered
+    ? `Delivered (${order.deliveredAt || "Completed"})`
+    : `Current Status: ${currentStage.key}`;
 
   const stageDetail = document.createElement("p");
   stageDetail.className = "farmer-credit";
@@ -436,10 +487,13 @@ function renderOrderTracking(animate = true) {
   trackingStages.forEach((stage, idx) => {
     const li = document.createElement("li");
     li.className = "tracking-step";
-    if (idx < order.stageIndex) li.classList.add("completed");
-    if (idx === order.stageIndex) li.classList.add("current");
+    const isCompleted = idx < order.stageIndex || (delivered && idx === order.stageIndex);
+    const isCurrent = !delivered && idx === order.stageIndex;
 
-    const stateLabel = idx < order.stageIndex ? "Completed" : idx === order.stageIndex ? "In Progress" : "Pending";
+    if (isCompleted) li.classList.add("completed");
+    if (isCurrent) li.classList.add("current");
+
+    const stateLabel = isCompleted ? "Completed" : isCurrent ? "In Progress" : "Pending";
     li.textContent = `${stage.key} (${stateLabel}) — ${stage.detail}`;
     stepsList.appendChild(li);
   });
@@ -458,11 +512,23 @@ function renderOrderTracking(animate = true) {
   const advanceBtn = document.createElement("button");
   advanceBtn.type = "button";
   advanceBtn.className = "details-btn";
-  advanceBtn.textContent = order.stageIndex < trackingStages.length - 1 ? "Advance Status Step" : "Order Delivered";
-  advanceBtn.disabled = order.stageIndex >= trackingStages.length - 1;
+  advanceBtn.textContent = delivered ? "Delivered" : "Advance Status Step";
+  advanceBtn.disabled = delivered;
   advanceBtn.addEventListener("click", () => advanceOrderStage(order.id));
 
-  actions.appendChild(advanceBtn);
+  const reorderBtn = document.createElement("button");
+  reorderBtn.type = "button";
+  reorderBtn.className = "secondary-btn";
+  reorderBtn.textContent = "Reorder Items";
+  reorderBtn.addEventListener("click", () => reorderOrderItems(order.id));
+
+  const resetStageBtn = document.createElement("button");
+  resetStageBtn.type = "button";
+  resetStageBtn.className = "secondary-btn";
+  resetStageBtn.textContent = "Reset to Confirmed";
+  resetStageBtn.addEventListener("click", () => resetOrderToConfirmed(order.id));
+
+  actions.append(advanceBtn, reorderBtn, resetStageBtn);
   orderTrackingPanel.append(headerRow, statusBadge, stageDetail, metaLine, stepsList, itemsList, actions);
 
   if (animate) {
@@ -470,6 +536,68 @@ function renderOrderTracking(animate = true) {
   } else {
     orderTrackingPanel.hidden = false;
   }
+}
+
+function createOrderCardElement(order) {
+  const delivered = isOrderDelivered(order);
+  const stage = trackingStages[order.stageIndex] || trackingStages[0];
+
+  const li = document.createElement("li");
+  li.className = `order-history-card ${delivered ? "order-delivered-card" : ""}`;
+
+  const info = document.createElement("div");
+  info.className = "order-history-info";
+
+  const titleRow = document.createElement("div");
+  titleRow.className = "order-title-row";
+
+  const title = document.createElement("strong");
+  title.textContent = `Order ${order.id}`;
+
+  const badge = document.createElement("span");
+  badge.className = `order-status-pill ${delivered ? "delivered" : "active"}`;
+  badge.textContent = delivered ? "Delivered" : stage.key;
+
+  titleRow.append(title, badge);
+
+  const itemsSummary = order.items.map((item) => `${item.name} (${item.qty} ${item.unit})`).join(", ");
+  const itemsLine = document.createElement("p");
+  itemsLine.className = "order-items-preview";
+  itemsLine.textContent = itemsSummary;
+
+  const details = document.createElement("p");
+  const timeNote = delivered
+    ? `Delivered: ${order.deliveredAt || "Completed"}`
+    : `Placed: ${order.placedAt}`;
+  details.textContent = `${timeNote} • ${order.deliveryLabel} • Total: ₱${Number(order.totalCost).toFixed(2)}`;
+
+  info.append(titleRow, itemsLine, details);
+
+  const btnGroup = document.createElement("div");
+  btnGroup.className = "card-actions";
+
+  const trackBtn = document.createElement("button");
+  trackBtn.type = "button";
+  trackBtn.className = delivered ? "secondary-btn" : "details-btn";
+  trackBtn.textContent = delivered ? "View Receipt & Tracking" : "Track Order";
+  trackBtn.addEventListener("click", () => {
+    selectedOrderId = order.id;
+    renderOrderTracking(true);
+  });
+
+  btnGroup.appendChild(trackBtn);
+
+  if (delivered) {
+    const reorderBtn = document.createElement("button");
+    reorderBtn.type = "button";
+    reorderBtn.className = "details-btn";
+    reorderBtn.textContent = "Reorder Items";
+    reorderBtn.addEventListener("click", () => reorderOrderItems(order.id));
+    btnGroup.appendChild(reorderBtn);
+  }
+
+  li.append(info, btnGroup);
+  return li;
 }
 
 function renderMyOrders(animate = true) {
@@ -507,37 +635,32 @@ function renderMyOrders(animate = true) {
     return;
   }
 
-  const list = document.createElement("ul");
-  list.className = "orders-history-list";
+  const activeOrders = ordersHistory.filter((order) => !isOrderDelivered(order));
+  const deliveredOrders = ordersHistory.filter((order) => isOrderDelivered(order));
 
-  ordersHistory.forEach((order) => {
-    const stage = trackingStages[order.stageIndex] || trackingStages[0];
-    const li = document.createElement("li");
-    li.className = "order-history-card";
+  if (activeOrders.length > 0) {
+    const activeHeading = document.createElement("h3");
+    activeHeading.className = "orders-group-heading";
+    activeHeading.textContent = `Active Orders (${activeOrders.length})`;
+    myOrdersPanel.appendChild(activeHeading);
 
-    const info = document.createElement("div");
-    const title = document.createElement("strong");
-    title.textContent = `Order ${order.id} • ${stage.key}`;
+    const activeList = document.createElement("ul");
+    activeList.className = "orders-history-list";
+    activeOrders.forEach((order) => activeList.appendChild(createOrderCardElement(order)));
+    myOrdersPanel.appendChild(activeList);
+  }
 
-    const details = document.createElement("p");
-    details.textContent = `${order.placedAt} • ${order.deliveryLabel} • Total: ₱${Number(order.totalCost).toFixed(2)}`;
+  if (deliveredOrders.length > 0) {
+    const deliveredHeading = document.createElement("h3");
+    deliveredHeading.className = "orders-group-heading";
+    deliveredHeading.textContent = `Delivered Orders (${deliveredOrders.length})`;
+    myOrdersPanel.appendChild(deliveredHeading);
 
-    info.append(title, details);
-
-    const trackBtn = document.createElement("button");
-    trackBtn.type = "button";
-    trackBtn.className = "details-btn";
-    trackBtn.textContent = "Track Order";
-    trackBtn.addEventListener("click", () => {
-      selectedOrderId = order.id;
-      renderOrderTracking(true);
-    });
-
-    li.append(info, trackBtn);
-    list.appendChild(li);
-  });
-
-  myOrdersPanel.appendChild(list);
+    const deliveredList = document.createElement("ul");
+    deliveredList.className = "orders-history-list";
+    deliveredOrders.forEach((order) => deliveredList.appendChild(createOrderCardElement(order)));
+    myOrdersPanel.appendChild(deliveredList);
+  }
 
   if (animate) {
     revealPanel(myOrdersPanel, true);
@@ -1005,20 +1128,24 @@ function renderProduceCards(items) {
   });
 }
 
-// Live progression for active orders every 12 seconds
+// Live progression for active orders every 30 seconds
 setInterval(() => {
   let changed = false;
   ordersHistory.forEach((order) => {
-    if (order.stageIndex < trackingStages.length - 1) {
+    if (!isOrderDelivered(order)) {
       order.stageIndex += 1;
+      if (isOrderDelivered(order) && !order.deliveredAt) {
+        order.deliveredAt = `Today, ${formatCurrentTime()}`;
+      }
       changed = true;
     }
   });
   if (changed) {
+    updateOrdersBadge();
     if (isMyOrdersOpen) renderMyOrders(false);
     if (selectedOrderId) renderOrderTracking(false);
   }
-}, 12000);
+}, 30000);
 
 toggleOrdersBtn.addEventListener("click", () => {
   isMyOrdersOpen = !isMyOrdersOpen;
