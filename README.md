@@ -1,5 +1,5 @@
 # HarvestHub
-HarvestHub is a front-end web platform that directly connects local farmers with consumers, and bulk buyers. It aims to reduce reliance on middlemen, minimize post-harvest waste, and support transparent pricing and easy ordering of fresh agricultural products.
+HarvestHub is a front-end web platform that directly connects local farmers with consumers, and bulk buyers. It aims to minimize post-harvest waste, and support transparent pricing and easy ordering of fresh agricultural products.
 
 ## Problem
 - Local farmers in agricultural communities struggle to sell perishable harvests directly to buyers, forcing them to rely on middlemen who reduce farmer profits and drive up retail prices.
