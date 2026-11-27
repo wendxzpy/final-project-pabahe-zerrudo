@@ -20,7 +20,7 @@ const farmersList = [
     location: "Misamis Oriental",
     specialty: "Fruits",
     photo: "images/farmer-marites.jpg",
-    bio: "Specializes in naturally ripened Lakatan bananas, sweet Carabao mangoes, and zesty calamansi.",
+    bio: "Specializes in naturally ripened Lakatan bananas, Indian mangoes, and zesty calamansi.",
     operations: {
       harvestSchedule: "Mon & Thu (6:00 AM – 9:30 AM)",
       pickupWindow: "Thu–Sun, 8:00 AM – 4:00 PM",
@@ -34,7 +34,7 @@ const farmersList = [
     location: "Bukidnon, Northern Mindanao",
     specialty: "Vegetables & Fruits",
     photo: "images/farmer-danilo.jpg",
-    bio: "Focuses on post-harvest curing for red onions and seasonal Queen pineapples with fair farm-gate pricing.",
+    bio: "Focuses on post-harvest curing for red onions and seasonal pineapples with fair farm-gate pricing.",
     operations: {
       harvestSchedule: "Wed & Fri (5:30 AM – 8:30 AM)",
       pickupWindow: "Fri–Sun, 7:30 AM – 3:00 PM",
@@ -134,21 +134,333 @@ const produceList = [
   }
 ];
 
+const deliveryOptions = [
+  {
+    id: "campus-pickup",
+    label: "Campus Hub Pickup",
+    fee: 0,
+    note: "Collect at student hub kiosk (Sat–Sun, 8:00 AM – 3:00 PM)"
+  },
+  {
+    id: "local-delivery",
+    label: "Local Delivery",
+    fee: 35,
+    note: "Direct drop-off within city service area"
+  },
+  {
+    id: "farm-gate",
+    label: "Farm Gate Pickup",
+    fee: 0,
+    note: "Pick up directly from the grower's farm window"
+  }
+];
+
+// Cart entries: { productId, qty }
+const cartItems = [];
+let selectedDeliveryId = deliveryOptions[0].id;
+let isOrderSummaryOpen = false;
+
 const produceGrid = document.getElementById("produce-grid");
 const searchInput = document.getElementById("search-input");
 const categorySelect = document.getElementById("category-select");
 const farmerSelect = document.getElementById("farmer-select");
 const clearFiltersBtn = document.getElementById("clear-filters-btn");
+const toggleCartBtn = document.getElementById("toggle-cart-btn");
+const cartCountEl = document.getElementById("cart-count");
+const orderSummaryPanel = document.getElementById("order-summary-panel");
+const orderConfirmation = document.getElementById("order-confirmation");
 const productDetails = document.getElementById("product-details");
 
 function getFarmerById(farmerId) {
   return farmersList.find((farmer) => farmer.id === farmerId);
 }
 
+function getProductById(productId) {
+  return produceList.find((item) => item.id === productId);
+}
+
+function getDeliveryOption() {
+  return deliveryOptions.find((opt) => opt.id === selectedDeliveryId) || deliveryOptions[0];
+}
+
 function formatStockStatus(item) {
   if (item.stock === 0) return "Out of stock";
   if (item.stock <= 5) return `Low stock (${item.stock} ${item.unit} left)`;
   return `${item.stock} ${item.unit} available`;
+}
+
+function updateCartBadge() {
+  const totalQty = cartItems.reduce((sum, entry) => sum + entry.qty, 0);
+  cartCountEl.textContent = String(totalQty);
+}
+
+function addToCart(productId, qtyToAdd) {
+  const product = getProductById(productId);
+  const qty = Number(qtyToAdd);
+  if (!product || product.stock <= 0 || !Number.isInteger(qty) || qty < 1) {
+    return;
+  }
+
+  const existing = cartItems.find((entry) => entry.productId === productId);
+  const currentQty = existing ? existing.qty : 0;
+  const nextQty = Math.min(product.stock, currentQty + qty);
+
+  if (nextQty <= currentQty) return;
+
+  if (existing) {
+    existing.qty = nextQty;
+  } else {
+    cartItems.push({ productId, qty: nextQty });
+  }
+
+  orderConfirmation.hidden = true;
+  updateCartBadge();
+  if (isOrderSummaryOpen) {
+    renderOrderSummary();
+  }
+}
+
+function updateCartQuantity(productId, nextQty) {
+  const product = getProductById(productId);
+  const index = cartItems.findIndex((entry) => entry.productId === productId);
+  if (index === -1 || !product) return;
+
+  const parsedQty = Number(nextQty);
+  if (!Number.isInteger(parsedQty) || parsedQty <= 0) {
+    cartItems.splice(index, 1);
+  } else {
+    cartItems[index].qty = Math.min(product.stock, parsedQty);
+  }
+
+  updateCartBadge();
+  renderOrderSummary();
+}
+
+function removeFromCart(productId) {
+  const index = cartItems.findIndex((entry) => entry.productId === productId);
+  if (index !== -1) {
+    cartItems.splice(index, 1);
+  }
+  updateCartBadge();
+  renderOrderSummary();
+}
+
+function confirmOrder() {
+  if (cartItems.length === 0) return;
+
+  const delivery = getDeliveryOption();
+  let subtotal = 0;
+
+  const summaryLines = cartItems
+    .map((entry) => {
+      const product = getProductById(entry.productId);
+      if (!product) return null;
+      const validQty = Math.min(entry.qty, product.stock);
+      if (validQty <= 0) return null;
+
+      product.stock -= validQty;
+      const lineTotal = validQty * product.price;
+      subtotal += lineTotal;
+      return `${product.name} (${validQty} ${product.unit}) — ₱${lineTotal.toFixed(2)}`;
+    })
+    .filter(Boolean);
+
+  const totalCost = subtotal + delivery.fee;
+
+  cartItems.length = 0;
+  isOrderSummaryOpen = false;
+  orderSummaryPanel.hidden = true;
+  updateCartBadge();
+  filterProduce();
+
+  if (!productDetails.hidden && productDetails.dataset.activeItemId) {
+    const activeItem = getProductById(Number(productDetails.dataset.activeItemId));
+    if (activeItem) showProductDetails(activeItem);
+  }
+
+  orderConfirmation.hidden = false;
+  orderConfirmation.innerHTML = "";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Order Confirmed";
+
+  const methodLine = document.createElement("p");
+  methodLine.textContent = `Delivery Option: ${delivery.label} (₱${delivery.fee.toFixed(2)}) • ${delivery.note}`;
+
+  const itemsLine = document.createElement("p");
+  itemsLine.textContent = `Items: ${summaryLines.join("; ")}`;
+
+  const totalLine = document.createElement("p");
+  totalLine.className = "farmer-credit";
+  totalLine.textContent = `Total Paid / Due: ₱${totalCost.toFixed(2)}`;
+
+  const dismissBtn = document.createElement("button");
+  dismissBtn.type = "button";
+  dismissBtn.className = "close-details-btn";
+  dismissBtn.textContent = "Dismiss";
+  dismissBtn.addEventListener("click", () => {
+    orderConfirmation.hidden = true;
+  });
+
+  orderConfirmation.append(heading, methodLine, itemsLine, totalLine, dismissBtn);
+}
+
+function renderOrderSummary() {
+  if (!isOrderSummaryOpen) {
+    orderSummaryPanel.hidden = true;
+    return;
+  }
+
+  orderSummaryPanel.hidden = false;
+  orderSummaryPanel.innerHTML = "";
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "panel-header-row";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Order Summary & Shopping Cart";
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "close-details-btn";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", () => {
+    isOrderSummaryOpen = false;
+    orderSummaryPanel.hidden = true;
+  });
+
+  headerRow.append(heading, closeBtn);
+  orderSummaryPanel.appendChild(headerRow);
+
+  if (cartItems.length === 0) {
+    const emptyMsg = document.createElement("p");
+    emptyMsg.textContent = "Your cart is currently empty. Open any produce item's details to add items.";
+    orderSummaryPanel.appendChild(emptyMsg);
+    return;
+  }
+
+  const list = document.createElement("ul");
+  list.className = "cart-item-list";
+
+  let subtotal = 0;
+
+  cartItems.forEach((entry) => {
+    const product = getProductById(entry.productId);
+    if (!product) return;
+
+    const clampedQty = Math.min(entry.qty, Math.max(0, product.stock));
+    entry.qty = clampedQty;
+    if (clampedQty <= 0) return;
+
+    const lineSubtotal = clampedQty * product.price;
+    subtotal += lineSubtotal;
+
+    const li = document.createElement("li");
+    li.className = "cart-item-row";
+
+    const info = document.createElement("div");
+    info.className = "cart-item-info";
+
+    const nameEl = document.createElement("strong");
+    nameEl.textContent = product.name;
+
+    const unitPriceEl = document.createElement("span");
+    unitPriceEl.className = "cart-unit-price";
+    unitPriceEl.textContent = `₱${Number(product.price).toFixed(2)} / ${product.unit} • Subtotal: ₱${lineSubtotal.toFixed(2)}`;
+
+    info.append(nameEl, unitPriceEl);
+
+    const controls = document.createElement("div");
+    controls.className = "cart-item-controls";
+
+    const decBtn = document.createElement("button");
+    decBtn.type = "button";
+    decBtn.className = "qty-btn";
+    decBtn.textContent = "-";
+    decBtn.setAttribute("aria-label", `Decrease quantity of ${product.name}`);
+    decBtn.addEventListener("click", () => updateCartQuantity(product.id, entry.qty - 1));
+
+    const qtyInput = document.createElement("input");
+    qtyInput.type = "number";
+    qtyInput.min = "1";
+    qtyInput.max = String(product.stock);
+    qtyInput.value = String(entry.qty);
+    qtyInput.className = "cart-qty-input";
+    qtyInput.setAttribute("aria-label", `Quantity of ${product.name}`);
+    qtyInput.addEventListener("change", () => updateCartQuantity(product.id, qtyInput.value));
+
+    const incBtn = document.createElement("button");
+    incBtn.type = "button";
+    incBtn.className = "qty-btn";
+    incBtn.textContent = "+";
+    incBtn.disabled = entry.qty >= product.stock;
+    incBtn.setAttribute("aria-label", `Increase quantity of ${product.name}`);
+    incBtn.addEventListener("click", () => updateCartQuantity(product.id, entry.qty + 1));
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "small-cancel-btn";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", () => removeFromCart(product.id));
+
+    controls.append(decBtn, qtyInput, incBtn, removeBtn);
+    li.append(info, controls);
+    list.appendChild(li);
+  });
+
+  const deliveryBox = document.createElement("div");
+  deliveryBox.className = "delivery-options-box";
+
+  const deliveryHeading = document.createElement("h3");
+  deliveryHeading.textContent = "Select Delivery Option";
+  deliveryBox.appendChild(deliveryHeading);
+
+  deliveryOptions.forEach((opt) => {
+    const label = document.createElement("label");
+    label.className = "delivery-option-label";
+
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "deliveryOption";
+    radio.value = opt.id;
+    radio.checked = opt.id === selectedDeliveryId;
+    radio.addEventListener("change", () => {
+      selectedDeliveryId = opt.id;
+      renderOrderSummary();
+    });
+
+    const textSpan = document.createElement("span");
+    const feeText = opt.fee === 0 ? "Free (₱0.00)" : `₱${opt.fee.toFixed(2)}`;
+    textSpan.textContent = `${opt.label} — ${feeText} (${opt.note})`;
+
+    label.append(radio, textSpan);
+    deliveryBox.appendChild(label);
+  });
+
+  const activeDelivery = getDeliveryOption();
+  const totalCost = subtotal + activeDelivery.fee;
+
+  const totalsBox = document.createElement("div");
+  totalsBox.className = "order-totals-box";
+
+  const subtotalLine = document.createElement("p");
+  subtotalLine.textContent = `Items Subtotal: ₱${subtotal.toFixed(2)}`;
+
+  const feeLine = document.createElement("p");
+  feeLine.textContent = `Delivery Fee (${activeDelivery.label}): ₱${activeDelivery.fee.toFixed(2)}`;
+
+  const totalLine = document.createElement("p");
+  totalLine.className = "order-grand-total";
+  totalLine.textContent = `Total Cost: ₱${totalCost.toFixed(2)}`;
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.type = "button";
+  confirmBtn.className = "details-btn";
+  confirmBtn.textContent = "Confirm Order";
+  confirmBtn.addEventListener("click", confirmOrder);
+
+  totalsBox.append(subtotalLine, feeLine, totalLine, confirmBtn);
+  orderSummaryPanel.append(list, deliveryBox, totalsBox);
 }
 
 function populateFarmerFilter() {
@@ -183,6 +495,7 @@ function filterProduce() {
 
 function showFarmerProfile(farmer) {
   productDetails.hidden = false;
+  delete productDetails.dataset.activeItemId;
   productDetails.innerHTML = "";
 
   const closeBtn = document.createElement("button");
@@ -264,6 +577,7 @@ function showFarmerProfile(farmer) {
 function showProductDetails(item) {
   const farmer = getFarmerById(item.farmerId);
   productDetails.hidden = false;
+  productDetails.dataset.activeItemId = String(item.id);
   productDetails.innerHTML = "";
 
   const closeBtn = document.createElement("button");
@@ -305,6 +619,57 @@ function showProductDetails(item) {
     farmerRow.append(farmerLinkBtn, locationSuffix);
     productDetails.appendChild(farmerRow);
   }
+
+  const cartBox = document.createElement("div");
+  cartBox.className = "reserve-box";
+
+  const cartHeading = document.createElement("h3");
+  cartHeading.textContent = "Add to Cart";
+  cartBox.appendChild(cartHeading);
+
+  if (item.stock <= 0) {
+    const soldOutMsg = document.createElement("p");
+    soldOutMsg.textContent = "Currently out of stock.";
+    cartBox.appendChild(soldOutMsg);
+  } else {
+    const form = document.createElement("form");
+    form.className = "reserve-form";
+
+    const qtyLabel = document.createElement("label");
+    qtyLabel.textContent = `Quantity (${item.unit}): `;
+    const qtyInput = document.createElement("input");
+    qtyInput.type = "number";
+    qtyInput.min = "1";
+    qtyInput.max = String(item.stock);
+    qtyInput.value = "1";
+    qtyLabel.appendChild(qtyInput);
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "submit";
+    addBtn.className = "details-btn";
+    addBtn.textContent = "Add to Cart";
+
+    const viewSummaryBtn = document.createElement("button");
+    viewSummaryBtn.type = "button";
+    viewSummaryBtn.className = "secondary-btn";
+    viewSummaryBtn.textContent = "Open Order Summary";
+    viewSummaryBtn.addEventListener("click", () => {
+      isOrderSummaryOpen = true;
+      renderOrderSummary();
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      addToCart(item.id, qtyInput.value);
+      isOrderSummaryOpen = true;
+      renderOrderSummary();
+    });
+
+    form.append(qtyLabel, addBtn, viewSummaryBtn);
+    cartBox.appendChild(form);
+  }
+
+  productDetails.appendChild(cartBox);
 }
 
 function renderProduceCards(items) {
@@ -387,6 +752,11 @@ function renderProduceCards(items) {
   });
 }
 
+toggleCartBtn.addEventListener("click", () => {
+  isOrderSummaryOpen = !isOrderSummaryOpen;
+  renderOrderSummary();
+});
+
 clearFiltersBtn.addEventListener("click", () => {
   searchInput.value = "";
   categorySelect.value = "All";
@@ -399,4 +769,5 @@ categorySelect.addEventListener("change", filterProduce);
 farmerSelect.addEventListener("change", filterProduce);
 
 populateFarmerFilter();
+updateCartBadge();
 renderProduceCards(produceList);

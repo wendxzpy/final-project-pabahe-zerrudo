@@ -45,6 +45,18 @@ body {
   color: var(--text-muted);
 }
 
+.top-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cart-toggle-btn {
+  margin-top: 0;
+}
+
 .marketplace-controls {
   display: flex;
   flex-wrap: wrap;
@@ -66,6 +78,8 @@ body {
   flex: 1 1 220px;
 }
 
+.order-summary-panel,
+.order-confirmation,
 .product-details {
   margin-bottom: 1.5rem;
   padding: 1.25rem;
@@ -75,13 +89,141 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-.product-details h2 {
-  margin: 0.5rem 0 0.4rem;
+.order-confirmation {
+  background: var(--bg-pill);
 }
 
-.product-details p {
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.panel-header-row h2,
+.order-confirmation h2,
+.product-details h2 {
+  margin: 0.25rem 0 0.4rem;
+}
+
+.product-details p,
+.order-confirmation p,
+.order-summary-panel p {
   margin: 0.35rem 0;
   color: var(--text-muted);
+}
+
+.cart-item-list {
+  list-style: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cart-item-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-page);
+}
+
+.cart-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-unit-price {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.cart-item-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.qty-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cart-qty-input {
+  width: 58px;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.small-cancel-btn {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delivery-options-box {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.delivery-options-box h3,
+.farmer-operations h3,
+.product-details h3 {
+  margin: 0.5rem 0 0.45rem;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.delivery-option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.order-totals-box {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.order-grand-total {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-farm) !important;
 }
 
 .details-image {
@@ -92,6 +234,39 @@ body {
   border-radius: 12px;
   margin: 0.75rem 0 0.5rem;
   display: block;
+}
+
+.reserve-box {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.reserve-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.reserve-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.reserve-form input {
+  width: 90px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 0.9rem;
 }
 
 .produce-grid {
@@ -247,13 +422,6 @@ body {
   border-radius: 12px;
   background: var(--bg-page);
   border: 1px solid var(--border-subtle);
-}
-
-.farmer-operations h3,
-.product-details h3 {
-  margin: 0.85rem 0 0.35rem;
-  font-size: 1rem;
-  color: var(--text-main);
 }
 
 .farmer-catalog-list {

@@ -9,9 +9,14 @@
 <body>
   <main class="container">
     <section aria-labelledby="marketplace-heading">
-      <header class="section-header">
-        <h1 id="marketplace-heading">HarvestHub Local Produce</h1>
-        <p>Fresh farm goods with transparent unit pricing and live stock availability.</p>
+      <header class="section-header top-header">
+        <div>
+          <h1 id="marketplace-heading">HarvestHub Local Produce</h1>
+          <p>Fresh farm goods with transparent unit pricing and live stock availability.</p>
+        </div>
+        <button id="toggle-cart-btn" type="button" class="details-btn cart-toggle-btn">
+          Order Summary (<span id="cart-count">0</span>)
+        </button>
       </header>
 
       <div class="marketplace-controls">
@@ -32,6 +37,10 @@
 
         <button id="clear-filters-btn" type="button" class="secondary-btn">Reset Filters</button>
       </div>
+
+      <aside id="order-confirmation" class="order-confirmation" aria-live="polite" hidden></aside>
+
+      <aside id="order-summary-panel" class="order-summary-panel" aria-live="polite" hidden></aside>
 
       <aside id="product-details" class="product-details" aria-live="polite" hidden></aside>
 
