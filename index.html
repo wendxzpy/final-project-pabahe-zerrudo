@@ -14,9 +14,14 @@
           <h1 id="marketplace-heading">HarvestHub Local Produce</h1>
           <p>Fresh farm goods with transparent unit pricing and live stock availability.</p>
         </div>
-        <button id="toggle-cart-btn" type="button" class="details-btn cart-toggle-btn">
-          Order Summary (<span id="cart-count">0</span>)
-        </button>
+        <div class="header-actions">
+          <button id="toggle-orders-btn" type="button" class="secondary-btn">
+            My Orders (<span id="orders-count">0</span>)
+          </button>
+          <button id="toggle-cart-btn" type="button" class="details-btn cart-toggle-btn">
+            Order Summary (<span id="cart-count">0</span>)
+          </button>
+        </div>
       </header>
 
       <div class="marketplace-controls">
@@ -41,6 +46,10 @@
       <aside id="order-confirmation" class="order-confirmation" aria-live="polite" hidden></aside>
 
       <aside id="order-summary-panel" class="order-summary-panel" aria-live="polite" hidden></aside>
+
+      <aside id="my-orders-panel" class="my-orders-panel" aria-live="polite" hidden></aside>
+
+      <aside id="order-tracking-panel" class="order-tracking-panel" aria-live="polite" hidden></aside>
 
       <aside id="product-details" class="product-details" aria-live="polite" hidden></aside>
 

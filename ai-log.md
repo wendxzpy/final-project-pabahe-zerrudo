@@ -27,3 +27,13 @@
 - **What I changed or rejected, and why:** I want the shopping cart and order summary to have a clean, and user-friendly design with clear buttons and readable pricing so that even elderly users can easily understand and manage their orders.
 - **How I tested it:** I tested adding and removing products, modifying quantities, checking itemized prices and total costs, and selecting different delivery options to ensure everything worked correctly.
 - **What I learned:** I learned how to manage shopping cart items, calculate order totals dynamically, and delivery options. I also learned the importance of providing a clear and accessible checkout experience for users.
+
+## Entry 5: [November 28, 2026]
+
+- **Feature:** Order Tracking
+- **User story:** As a student, I want to view my order history and track deliveries, so that I can monitor the status of my purchases.
+- **What I asked:** Can you provide a short and concise step-by-step plan for this user story?
+- **What the AI suggested:** Create a My Orders page that displays the user's previous and current orders with their basic details and status. Add an Order Tracking view for each selected order, showing delivery progress from confirmation to successful delivery with regularly updated status information.
+- **What I changed or rejected, and why:** I want the order history and tracking interface to have a clean design with clear status indicators. The layout should also be accessible to elderly through readable fonts, simple navigation, and visible buttons.
+- **How I tested it:** I tested the My Orders page to ensure previous orders were displayed correctly and selected orders opened their corresponding tracking views. I also checked whether order status updates appeared correctly throughout the delivery process.
+- **What I learned:** I learned how to organize order history and create an order tracking interface that helps users monitor their purchases. I also learned the importance of clear delivery status updates in improving customer confidence and user experience.

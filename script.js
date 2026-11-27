@@ -34,7 +34,7 @@ const farmersList = [
     location: "Bukidnon, Northern Mindanao",
     specialty: "Vegetables & Fruits",
     photo: "images/farmer-danilo.jpg",
-    bio: "Focuses on post-harvest curing for red onions and seasonal pineapples with fair farm-gate pricing.",
+    bio: "Focuses on post-harvest curing for red onions and  pineapples with fair farm-gate pricing.",
     operations: {
       harvestSchedule: "Wed & Fri (5:30 AM – 8:30 AM)",
       pickupWindow: "Fri–Sun, 7:30 AM – 3:00 PM",
@@ -108,7 +108,7 @@ const produceList = [
     unit: "kg",
     stock: 18,
     image: "images/indian mangoes.jpg",
-    description: "Juicy, fragrant ripe Carabao mangoes with honey-sweet flavor and minimal fiber."
+    description: "Juicy, fragrant ripe Indian mangoes with honey-sweet flavor and minimal fiber."
   },
   {
     id: 7,
@@ -155,19 +155,48 @@ const deliveryOptions = [
   }
 ];
 
-// Cart entries: { productId, qty }
+const trackingStages = [
+  { key: "Order Confirmed", detail: "Order received and assigned to partner grower." },
+  { key: "Preparing Harvest", detail: "Produce is being harvested, weighed, and packed." },
+  { key: "Out for Delivery", detail: "Order is en route to your chosen pickup or delivery point." },
+  { key: "Delivered", detail: "Order completed and ready or received." }
+];
+
+const ordersHistory = [
+  {
+    id: "HH-1042",
+    placedAt: "2026-11-24 09:15 AM",
+    deliveryLabel: "Campus Hub Pickup",
+    deliveryFee: 0,
+    subtotal: 230,
+    totalCost: 230,
+    stageIndex: 1,
+    items: [
+      { name: "Tomatoes", qty: 2, unit: "kg", unitPrice: 45, lineTotal: 90 },
+      { name: "Carabao Mangoes", qty: 1, unit: "kg", unitPrice: 140, lineTotal: 140 }
+    ]
+  }
+];
+
+// Cart & UI state
 const cartItems = [];
 let selectedDeliveryId = deliveryOptions[0].id;
 let isOrderSummaryOpen = false;
+let isMyOrdersOpen = false;
+let selectedOrderId = null;
 
 const produceGrid = document.getElementById("produce-grid");
 const searchInput = document.getElementById("search-input");
 const categorySelect = document.getElementById("category-select");
 const farmerSelect = document.getElementById("farmer-select");
 const clearFiltersBtn = document.getElementById("clear-filters-btn");
+const toggleOrdersBtn = document.getElementById("toggle-orders-btn");
+const ordersCountEl = document.getElementById("orders-count");
 const toggleCartBtn = document.getElementById("toggle-cart-btn");
 const cartCountEl = document.getElementById("cart-count");
 const orderSummaryPanel = document.getElementById("order-summary-panel");
+const myOrdersPanel = document.getElementById("my-orders-panel");
+const orderTrackingPanel = document.getElementById("order-tracking-panel");
 const orderConfirmation = document.getElementById("order-confirmation");
 const productDetails = document.getElementById("product-details");
 
@@ -183,10 +212,18 @@ function getDeliveryOption() {
   return deliveryOptions.find((opt) => opt.id === selectedDeliveryId) || deliveryOptions[0];
 }
 
+function getOrderById(orderId) {
+  return ordersHistory.find((order) => order.id === orderId);
+}
+
 function formatStockStatus(item) {
   if (item.stock === 0) return "Out of stock";
   if (item.stock <= 5) return `Low stock (${item.stock} ${item.unit} left)`;
   return `${item.stock} ${item.unit} available`;
+}
+
+function updateOrdersBadge() {
+  ordersCountEl.textContent = String(ordersHistory.length);
 }
 
 function updateCartBadge() {
@@ -250,27 +287,48 @@ function confirmOrder() {
 
   const delivery = getDeliveryOption();
   let subtotal = 0;
+  const confirmedItems = [];
 
-  const summaryLines = cartItems
-    .map((entry) => {
-      const product = getProductById(entry.productId);
-      if (!product) return null;
-      const validQty = Math.min(entry.qty, product.stock);
-      if (validQty <= 0) return null;
+  cartItems.forEach((entry) => {
+    const product = getProductById(entry.productId);
+    if (!product) return;
+    const validQty = Math.min(entry.qty, product.stock);
+    if (validQty <= 0) return;
 
-      product.stock -= validQty;
-      const lineTotal = validQty * product.price;
-      subtotal += lineTotal;
-      return `${product.name} (${validQty} ${product.unit}) — ₱${lineTotal.toFixed(2)}`;
-    })
-    .filter(Boolean);
+    product.stock -= validQty;
+    const lineTotal = validQty * product.price;
+    subtotal += lineTotal;
+    confirmedItems.push({
+      name: product.name,
+      qty: validQty,
+      unit: product.unit,
+      unitPrice: product.price,
+      lineTotal
+    });
+  });
+
+  if (confirmedItems.length === 0) return;
 
   const totalCost = subtotal + delivery.fee;
+  const newOrder = {
+    id: `HH-${1043 + ordersHistory.length}`,
+    placedAt: "Just now",
+    deliveryLabel: delivery.label,
+    deliveryFee: delivery.fee,
+    subtotal,
+    totalCost,
+    stageIndex: 0,
+    items: confirmedItems
+  };
+
+  ordersHistory.unshift(newOrder);
+  selectedOrderId = newOrder.id;
 
   cartItems.length = 0;
   isOrderSummaryOpen = false;
   orderSummaryPanel.hidden = true;
   updateCartBadge();
+  updateOrdersBadge();
   filterProduce();
 
   if (!productDetails.hidden && productDetails.dataset.activeItemId) {
@@ -282,27 +340,188 @@ function confirmOrder() {
   orderConfirmation.innerHTML = "";
 
   const heading = document.createElement("h2");
-  heading.textContent = "Order Confirmed";
+  heading.textContent = `Order Confirmed (${newOrder.id})`;
 
   const methodLine = document.createElement("p");
-  methodLine.textContent = `Delivery Option: ${delivery.label} (₱${delivery.fee.toFixed(2)}) • ${delivery.note}`;
+  methodLine.textContent = `Delivery Option: ${delivery.label} (₱${delivery.fee.toFixed(2)}) • Total: ₱${totalCost.toFixed(2)}`;
 
-  const itemsLine = document.createElement("p");
-  itemsLine.textContent = `Items: ${summaryLines.join("; ")}`;
-
-  const totalLine = document.createElement("p");
-  totalLine.className = "farmer-credit";
-  totalLine.textContent = `Total Paid / Due: ₱${totalCost.toFixed(2)}`;
+  const trackNowBtn = document.createElement("button");
+  trackNowBtn.type = "button";
+  trackNowBtn.className = "details-btn";
+  trackNowBtn.textContent = "Track This Order";
+  trackNowBtn.addEventListener("click", () => {
+    isMyOrdersOpen = true;
+    selectedOrderId = newOrder.id;
+    renderMyOrders();
+    renderOrderTracking();
+  });
 
   const dismissBtn = document.createElement("button");
   dismissBtn.type = "button";
-  dismissBtn.className = "close-details-btn";
+  dismissBtn.className = "secondary-btn";
   dismissBtn.textContent = "Dismiss";
   dismissBtn.addEventListener("click", () => {
     orderConfirmation.hidden = true;
   });
 
-  orderConfirmation.append(heading, methodLine, itemsLine, totalLine, dismissBtn);
+  orderConfirmation.append(heading, methodLine, trackNowBtn, dismissBtn);
+}
+
+function advanceOrderStage(orderId) {
+  const order = getOrderById(orderId);
+  if (!order) return;
+  if (order.stageIndex < trackingStages.length - 1) {
+    order.stageIndex += 1;
+  }
+  renderMyOrders();
+  renderOrderTracking();
+}
+
+function renderOrderTracking() {
+  if (!selectedOrderId) {
+    orderTrackingPanel.hidden = true;
+    return;
+  }
+
+  const order = getOrderById(selectedOrderId);
+  if (!order) {
+    orderTrackingPanel.hidden = true;
+    return;
+  }
+
+  const currentStage = trackingStages[order.stageIndex] || trackingStages[0];
+  orderTrackingPanel.hidden = false;
+  orderTrackingPanel.innerHTML = "";
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "panel-header-row";
+
+  const heading = document.createElement("h2");
+  heading.textContent = `Order Tracking — ${order.id}`;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "close-details-btn";
+  closeBtn.textContent = "Close Tracking";
+  closeBtn.addEventListener("click", () => {
+    selectedOrderId = null;
+    orderTrackingPanel.hidden = true;
+  });
+
+  headerRow.append(heading, closeBtn);
+
+  const statusBadge = document.createElement("span");
+  statusBadge.className = "category-badge";
+  statusBadge.textContent = `Current Status: ${currentStage.key}`;
+
+  const stageDetail = document.createElement("p");
+  stageDetail.className = "farmer-credit";
+  stageDetail.textContent = currentStage.detail;
+
+  const metaLine = document.createElement("p");
+  metaLine.textContent = `Delivery: ${order.deliveryLabel} • Total: ₱${Number(order.totalCost).toFixed(2)} • Placed: ${order.placedAt}`;
+
+  const stepsList = document.createElement("ol");
+  stepsList.className = "tracking-steps";
+
+  trackingStages.forEach((stage, idx) => {
+    const li = document.createElement("li");
+    li.className = "tracking-step";
+    if (idx < order.stageIndex) li.classList.add("completed");
+    if (idx === order.stageIndex) li.classList.add("current");
+
+    const stateLabel = idx < order.stageIndex ? "Completed" : idx === order.stageIndex ? "In Progress" : "Pending";
+    li.textContent = `${stage.key} (${stateLabel}) — ${stage.detail}`;
+    stepsList.appendChild(li);
+  });
+
+  const itemsList = document.createElement("ul");
+  itemsList.className = "farmer-catalog-list";
+  order.items.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = `${item.name} — ${item.qty} ${item.unit} × ₱${Number(item.unitPrice).toFixed(2)} = ₱${Number(item.lineTotal).toFixed(2)}`;
+    itemsList.appendChild(li);
+  });
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+
+  const advanceBtn = document.createElement("button");
+  advanceBtn.type = "button";
+  advanceBtn.className = "details-btn";
+  advanceBtn.textContent = order.stageIndex < trackingStages.length - 1 ? "Advance Status Step" : "Order Delivered";
+  advanceBtn.disabled = order.stageIndex >= trackingStages.length - 1;
+  advanceBtn.addEventListener("click", () => advanceOrderStage(order.id));
+
+  actions.appendChild(advanceBtn);
+  orderTrackingPanel.append(headerRow, statusBadge, stageDetail, metaLine, stepsList, itemsList, actions);
+}
+
+function renderMyOrders() {
+  if (!isMyOrdersOpen) {
+    myOrdersPanel.hidden = true;
+    return;
+  }
+
+  myOrdersPanel.hidden = false;
+  myOrdersPanel.innerHTML = "";
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "panel-header-row";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "My Orders";
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "close-details-btn";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", () => {
+    isMyOrdersOpen = false;
+    myOrdersPanel.hidden = true;
+  });
+
+  headerRow.append(heading, closeBtn);
+  myOrdersPanel.appendChild(headerRow);
+
+  if (ordersHistory.length === 0) {
+    const emptyMsg = document.createElement("p");
+    emptyMsg.textContent = "No orders placed yet. Confirm an order from Order Summary to start tracking.";
+    myOrdersPanel.appendChild(emptyMsg);
+    return;
+  }
+
+  const list = document.createElement("ul");
+  list.className = "orders-history-list";
+
+  ordersHistory.forEach((order) => {
+    const stage = trackingStages[order.stageIndex] || trackingStages[0];
+    const li = document.createElement("li");
+    li.className = "order-history-card";
+
+    const info = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = `Order ${order.id} • ${stage.key}`;
+
+    const details = document.createElement("p");
+    details.textContent = `${order.placedAt} • ${order.deliveryLabel} • Total: ₱${Number(order.totalCost).toFixed(2)}`;
+
+    info.append(title, details);
+
+    const trackBtn = document.createElement("button");
+    trackBtn.type = "button";
+    trackBtn.className = "details-btn";
+    trackBtn.textContent = "Track Order";
+    trackBtn.addEventListener("click", () => {
+      selectedOrderId = order.id;
+      renderOrderTracking();
+    });
+
+    li.append(info, trackBtn);
+    list.appendChild(li);
+  });
+
+  myOrdersPanel.appendChild(list);
 }
 
 function renderOrderSummary() {
@@ -752,6 +971,26 @@ function renderProduceCards(items) {
   });
 }
 
+// Live progression for active orders every 12 seconds
+setInterval(() => {
+  let changed = false;
+  ordersHistory.forEach((order) => {
+    if (order.stageIndex < trackingStages.length - 1) {
+      order.stageIndex += 1;
+      changed = true;
+    }
+  });
+  if (changed) {
+    if (isMyOrdersOpen) renderMyOrders();
+    if (selectedOrderId) renderOrderTracking();
+  }
+}, 12000);
+
+toggleOrdersBtn.addEventListener("click", () => {
+  isMyOrdersOpen = !isMyOrdersOpen;
+  renderMyOrders();
+});
+
 toggleCartBtn.addEventListener("click", () => {
   isOrderSummaryOpen = !isOrderSummaryOpen;
   renderOrderSummary();
@@ -769,5 +1008,6 @@ categorySelect.addEventListener("change", filterProduce);
 farmerSelect.addEventListener("change", filterProduce);
 
 populateFarmerFilter();
+updateOrdersBadge();
 updateCartBadge();
 renderProduceCards(produceList);

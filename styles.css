@@ -53,6 +53,12 @@ body {
   gap: 1rem;
 }
 
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .cart-toggle-btn {
   margin-top: 0;
 }
@@ -79,6 +85,8 @@ body {
 }
 
 .order-summary-panel,
+.my-orders-panel,
+.order-tracking-panel,
 .order-confirmation,
 .product-details {
   margin-bottom: 1.5rem;
@@ -109,9 +117,53 @@ body {
 
 .product-details p,
 .order-confirmation p,
-.order-summary-panel p {
+.order-summary-panel p,
+.my-orders-panel p,
+.order-tracking-panel p {
   margin: 0.35rem 0;
   color: var(--text-muted);
+}
+
+.orders-history-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.order-history-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-page);
+}
+
+.tracking-steps {
+  margin: 0.85rem 0;
+  padding-left: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tracking-step {
+  color: var(--text-muted);
+}
+
+.tracking-step.completed {
+  color: var(--text-main);
+}
+
+.tracking-step.current {
+  font-weight: 700;
+  color: var(--accent-farm);
 }
 
 .cart-item-list {
@@ -374,6 +426,11 @@ body {
   border: 0;
   background: var(--accent-farm);
   color: #ffffff;
+}
+
+.details-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .product-details .close-details-btn,
