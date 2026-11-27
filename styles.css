@@ -101,6 +101,8 @@ body {
 }
 
 .produce-card {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
@@ -124,6 +126,7 @@ body {
 }
 
 .category-badge {
+  align-self: flex-start;
   display: inline-block;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
@@ -134,8 +137,14 @@ body {
 }
 
 .produce-card h2 {
-  margin: 0.75rem 0 0.35rem;
+  margin: 0.75rem 0 0.25rem;
   font-size: 1.2rem;
+}
+
+.card-farmer-name {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }
 
 .produce-price {
@@ -147,6 +156,7 @@ body {
 
 .stock-status {
   margin: 0;
+  align-self: flex-start;
   display: inline-block;
   padding: 0.3rem 0.65rem;
   border-radius: 8px;
@@ -166,22 +176,98 @@ body {
   color: #991b1b;
 }
 
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.9rem;
+}
+
 .details-btn,
-.close-details-btn {
-  margin-top: 0.9rem;
+.close-details-btn,
+.secondary-btn {
   padding: 0.55rem 0.9rem;
-  border: 0;
   border-radius: 10px;
-  background: var(--accent-farm);
-  color: #ffffff;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
 }
 
+.details-btn,
+.close-details-btn {
+  border: 0;
+  background: var(--accent-farm);
+  color: #ffffff;
+}
+
+.product-details .close-details-btn,
+.product-details .details-btn {
+  margin-top: 0.75rem;
+  margin-right: 0.5rem;
+}
+
+.product-details .secondary-btn {
+  margin-top: 0.75rem;
+}
+
+.secondary-btn {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.secondary-btn:hover {
+  border-color: var(--accent-farm);
+}
+
 .details-btn:hover,
 .close-details-btn:hover {
   opacity: 0.92;
+}
+
+.farmer-link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-farm);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.farmer-link-btn:hover {
+  opacity: 0.8;
+}
+
+.farmer-operations {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+}
+
+.farmer-operations h3,
+.product-details h3 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.farmer-catalog-list {
+  margin: 0.4rem 0 0.85rem;
+  padding-left: 1.25rem;
+  color: var(--text-main);
+}
+
+.farmer-catalog-list li {
+  margin-bottom: 0.25rem;
+}
+
+.farmer-credit {
+  font-weight: 600;
 }
 
 .empty-state {
