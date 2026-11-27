@@ -34,7 +34,7 @@ const farmersList = [
     location: "Bukidnon, Northern Mindanao",
     specialty: "Vegetables & Fruits",
     photo: "images/farmer-danilo.jpg",
-    bio: "Focuses on post-harvest curing for red onions and  pineapples with fair farm-gate pricing.",
+    bio: "Focuses on post-harvest curing for red onions and pineapples with fair farm-gate pricing.",
     operations: {
       harvestSchedule: "Wed & Fri (5:30 AM – 8:30 AM)",
       pickupWindow: "Fri–Sun, 7:30 AM – 3:00 PM",
@@ -173,7 +173,7 @@ const ordersHistory = [
     stageIndex: 1,
     items: [
       { name: "Tomatoes", qty: 2, unit: "kg", unitPrice: 45, lineTotal: 90 },
-      { name: "Carabao Mangoes", qty: 1, unit: "kg", unitPrice: 140, lineTotal: 140 }
+      { name: "Indian Mangoes", qty: 1, unit: "kg", unitPrice: 140, lineTotal: 140 }
     ]
   }
 ];
@@ -199,6 +199,16 @@ const myOrdersPanel = document.getElementById("my-orders-panel");
 const orderTrackingPanel = document.getElementById("order-tracking-panel");
 const orderConfirmation = document.getElementById("order-confirmation");
 const productDetails = document.getElementById("product-details");
+
+function revealPanel(panelEl, shouldScroll = true) {
+  panelEl.hidden = false;
+  panelEl.classList.remove("panel-animate");
+  void panelEl.offsetWidth; // Restart CSS animation cleanly
+  panelEl.classList.add("panel-animate");
+  if (shouldScroll) {
+    panelEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
 
 function getFarmerById(farmerId) {
   return farmersList.find((farmer) => farmer.id === farmerId);
@@ -253,7 +263,7 @@ function addToCart(productId, qtyToAdd) {
   orderConfirmation.hidden = true;
   updateCartBadge();
   if (isOrderSummaryOpen) {
-    renderOrderSummary();
+    renderOrderSummary(false);
   }
 }
 
@@ -270,7 +280,7 @@ function updateCartQuantity(productId, nextQty) {
   }
 
   updateCartBadge();
-  renderOrderSummary();
+  renderOrderSummary(false);
 }
 
 function removeFromCart(productId) {
@@ -279,7 +289,7 @@ function removeFromCart(productId) {
     cartItems.splice(index, 1);
   }
   updateCartBadge();
-  renderOrderSummary();
+  renderOrderSummary(false);
 }
 
 function confirmOrder() {
@@ -333,10 +343,9 @@ function confirmOrder() {
 
   if (!productDetails.hidden && productDetails.dataset.activeItemId) {
     const activeItem = getProductById(Number(productDetails.dataset.activeItemId));
-    if (activeItem) showProductDetails(activeItem);
+    if (activeItem) showProductDetails(activeItem, false);
   }
 
-  orderConfirmation.hidden = false;
   orderConfirmation.innerHTML = "";
 
   const heading = document.createElement("h2");
@@ -352,8 +361,8 @@ function confirmOrder() {
   trackNowBtn.addEventListener("click", () => {
     isMyOrdersOpen = true;
     selectedOrderId = newOrder.id;
-    renderMyOrders();
-    renderOrderTracking();
+    renderMyOrders(false);
+    renderOrderTracking(true);
   });
 
   const dismissBtn = document.createElement("button");
@@ -365,6 +374,7 @@ function confirmOrder() {
   });
 
   orderConfirmation.append(heading, methodLine, trackNowBtn, dismissBtn);
+  revealPanel(orderConfirmation, true);
 }
 
 function advanceOrderStage(orderId) {
@@ -373,11 +383,11 @@ function advanceOrderStage(orderId) {
   if (order.stageIndex < trackingStages.length - 1) {
     order.stageIndex += 1;
   }
-  renderMyOrders();
-  renderOrderTracking();
+  renderMyOrders(false);
+  renderOrderTracking(false);
 }
 
-function renderOrderTracking() {
+function renderOrderTracking(animate = true) {
   if (!selectedOrderId) {
     orderTrackingPanel.hidden = true;
     return;
@@ -390,7 +400,6 @@ function renderOrderTracking() {
   }
 
   const currentStage = trackingStages[order.stageIndex] || trackingStages[0];
-  orderTrackingPanel.hidden = false;
   orderTrackingPanel.innerHTML = "";
 
   const headerRow = document.createElement("div");
@@ -455,15 +464,20 @@ function renderOrderTracking() {
 
   actions.appendChild(advanceBtn);
   orderTrackingPanel.append(headerRow, statusBadge, stageDetail, metaLine, stepsList, itemsList, actions);
+
+  if (animate) {
+    revealPanel(orderTrackingPanel, true);
+  } else {
+    orderTrackingPanel.hidden = false;
+  }
 }
 
-function renderMyOrders() {
+function renderMyOrders(animate = true) {
   if (!isMyOrdersOpen) {
     myOrdersPanel.hidden = true;
     return;
   }
 
-  myOrdersPanel.hidden = false;
   myOrdersPanel.innerHTML = "";
 
   const headerRow = document.createElement("div");
@@ -488,6 +502,8 @@ function renderMyOrders() {
     const emptyMsg = document.createElement("p");
     emptyMsg.textContent = "No orders placed yet. Confirm an order from Order Summary to start tracking.";
     myOrdersPanel.appendChild(emptyMsg);
+    if (animate) revealPanel(myOrdersPanel, true);
+    else myOrdersPanel.hidden = false;
     return;
   }
 
@@ -514,7 +530,7 @@ function renderMyOrders() {
     trackBtn.textContent = "Track Order";
     trackBtn.addEventListener("click", () => {
       selectedOrderId = order.id;
-      renderOrderTracking();
+      renderOrderTracking(true);
     });
 
     li.append(info, trackBtn);
@@ -522,15 +538,20 @@ function renderMyOrders() {
   });
 
   myOrdersPanel.appendChild(list);
+
+  if (animate) {
+    revealPanel(myOrdersPanel, true);
+  } else {
+    myOrdersPanel.hidden = false;
+  }
 }
 
-function renderOrderSummary() {
+function renderOrderSummary(animate = true) {
   if (!isOrderSummaryOpen) {
     orderSummaryPanel.hidden = true;
     return;
   }
 
-  orderSummaryPanel.hidden = false;
   orderSummaryPanel.innerHTML = "";
 
   const headerRow = document.createElement("div");
@@ -555,6 +576,8 @@ function renderOrderSummary() {
     const emptyMsg = document.createElement("p");
     emptyMsg.textContent = "Your cart is currently empty. Open any produce item's details to add items.";
     orderSummaryPanel.appendChild(emptyMsg);
+    if (animate) revealPanel(orderSummaryPanel, true);
+    else orderSummaryPanel.hidden = false;
     return;
   }
 
@@ -645,7 +668,7 @@ function renderOrderSummary() {
     radio.checked = opt.id === selectedDeliveryId;
     radio.addEventListener("change", () => {
       selectedDeliveryId = opt.id;
-      renderOrderSummary();
+      renderOrderSummary(false);
     });
 
     const textSpan = document.createElement("span");
@@ -680,6 +703,12 @@ function renderOrderSummary() {
 
   totalsBox.append(subtotalLine, feeLine, totalLine, confirmBtn);
   orderSummaryPanel.append(list, deliveryBox, totalsBox);
+
+  if (animate) {
+    revealPanel(orderSummaryPanel, true);
+  } else {
+    orderSummaryPanel.hidden = false;
+  }
 }
 
 function populateFarmerFilter() {
@@ -713,7 +742,6 @@ function filterProduce() {
 }
 
 function showFarmerProfile(farmer) {
-  productDetails.hidden = false;
   delete productDetails.dataset.activeItemId;
   productDetails.innerHTML = "";
 
@@ -791,11 +819,11 @@ function showFarmerProfile(farmer) {
   });
 
   productDetails.append(closeBtn, img, badge, heading, location, bio, opsBox, catalogHeading, catalogList, filterBtn);
+  revealPanel(productDetails, true);
 }
 
-function showProductDetails(item) {
+function showProductDetails(item, animate = true) {
   const farmer = getFarmerById(item.farmerId);
-  productDetails.hidden = false;
   productDetails.dataset.activeItemId = String(item.id);
   productDetails.innerHTML = "";
 
@@ -874,14 +902,14 @@ function showProductDetails(item) {
     viewSummaryBtn.textContent = "Open Order Summary";
     viewSummaryBtn.addEventListener("click", () => {
       isOrderSummaryOpen = true;
-      renderOrderSummary();
+      renderOrderSummary(true);
     });
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       addToCart(item.id, qtyInput.value);
       isOrderSummaryOpen = true;
-      renderOrderSummary();
+      renderOrderSummary(true);
     });
 
     form.append(qtyLabel, addBtn, viewSummaryBtn);
@@ -889,6 +917,12 @@ function showProductDetails(item) {
   }
 
   productDetails.appendChild(cartBox);
+
+  if (animate) {
+    revealPanel(productDetails, true);
+  } else {
+    productDetails.hidden = false;
+  }
 }
 
 function renderProduceCards(items) {
@@ -953,7 +987,7 @@ function renderProduceCards(items) {
     detailsBtn.type = "button";
     detailsBtn.className = "details-btn";
     detailsBtn.textContent = "View Details";
-    detailsBtn.addEventListener("click", () => showProductDetails(item));
+    detailsBtn.addEventListener("click", () => showProductDetails(item, true));
 
     actions.appendChild(detailsBtn);
 
@@ -981,19 +1015,19 @@ setInterval(() => {
     }
   });
   if (changed) {
-    if (isMyOrdersOpen) renderMyOrders();
-    if (selectedOrderId) renderOrderTracking();
+    if (isMyOrdersOpen) renderMyOrders(false);
+    if (selectedOrderId) renderOrderTracking(false);
   }
 }, 12000);
 
 toggleOrdersBtn.addEventListener("click", () => {
   isMyOrdersOpen = !isMyOrdersOpen;
-  renderMyOrders();
+  renderMyOrders(true);
 });
 
 toggleCartBtn.addEventListener("click", () => {
   isOrderSummaryOpen = !isOrderSummaryOpen;
-  renderOrderSummary();
+  renderOrderSummary(true);
 });
 
 clearFiltersBtn.addEventListener("click", () => {

@@ -28,7 +28,7 @@
 - **How I tested it:** I tested adding and removing products, modifying quantities, checking itemized prices and total costs, and selecting different delivery options to ensure everything worked correctly.
 - **What I learned:** I learned how to manage shopping cart items, calculate order totals dynamically, and delivery options. I also learned the importance of providing a clear and accessible checkout experience for users.
 
-## Entry 5: [November 28, 2026]
+## Entry 4: [November 28, 2026]
 
 - **Feature:** Order Tracking
 - **User story:** As a student, I want to view my order history and track deliveries, so that I can monitor the status of my purchases.
@@ -37,3 +37,13 @@
 - **What I changed or rejected, and why:** I want the order history and tracking interface to have a clean design with clear status indicators. The layout should also be accessible to elderly through readable fonts, simple navigation, and visible buttons.
 - **How I tested it:** I tested the My Orders page to ensure previous orders were displayed correctly and selected orders opened their corresponding tracking views. I also checked whether order status updates appeared correctly throughout the delivery process.
 - **What I learned:** I learned how to organize order history and create an order tracking interface that helps users monitor their purchases. I also learned the importance of clear delivery status updates in improving customer confidence and user experience.
+
+## Entry 5: [November 28, 2026]
+
+- **Feature:** Polishing of web app
+- **User story:** As a student, I want my web app to be functionable yet organized structure so that it will be easier for our target audience to use it.
+- **What I asked:** Can you provide a short and concise step-by-step plan for this user story?
+- **What the AI suggested:** Polish the buttons and Pages in nice and clean apperance
+- **What I changed or rejected, and why:** I change the effects of each buttons so that it will not be too plain.
+- **How I tested it:** I tested it by running it on web and on other devices if the format will not be different in other sizes
+- **What I learned:** I learned how to organize buttons function and how to have a cleaner and functionable web app.
